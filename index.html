@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0826" />
+    <title>Buzzer Beater: 3D Arcade Basketball</title>
+    <meta name="description" content="Flick to shoot hoops in a loud 3D arena. Classic, Survival, Moving Hoop and 3-Point modes, a 36-level career, skins and a weekly league. Free to play in your browser." />
+    <meta property="og:title" content="Buzzer Beater: 3D Arcade Basketball" />
+    <meta property="og:description" content="Flick to shoot hoops in a loud 3D arena. Free to play in your browser." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <script type="module" crossorigin src="./assets/index-DbC-55lq.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/three-D8nE13RK.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-r_TeLYB8.css">
+  </head>
+  <body>
+    <!-- Shared game markup, injected into every app's index.html at the GAME_MARKUP placeholder by vite.config.ts. -->
+<div id="loader" aria-hidden="true">
+  <div class="ball"></div>
+  <div class="track"><span id="loader-bar"></span></div>
+  <span class="lbl" data-i18n="loading">Warming up</span>
+  <p class="tip" id="loader-tip"></p>
+</div>
+
+<div id="rotate" role="alert">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2" /><path d="M11 18h2" /></svg>
+  <span data-i18n="rotate">Turn your phone upright</span>
+</div>
+
+<div id="app">
+  <div id="stage">
+    <canvas id="c" data-i18n-label="canvasLabel"></canvas>
+    <canvas id="fx" aria-hidden="true"></canvas>
+
+    <div id="hud" aria-live="off">
+      <div class="cell"><span class="lbl" data-i18n="score">Score</span><span class="val" id="score">0</span></div>
+      <div class="cell mid"><span class="lbl" id="time-lbl" data-i18n="clock">Clock</span><span class="val time" id="time">60</span></div>
+      <div class="cell end"><span class="lbl" data-i18n="best">Best</span><span class="val" id="best">0</span></div>
+      <div class="lv-line" id="lv-line" hidden><b id="lv-n">LEVEL 1</b><i class="lv-bar"><i id="lv-fill"></i></i><span id="lv-next"></span></div>
+    </div>
+    <div id="goal" hidden></div>
+    <div id="streak" hidden><b id="stk-n">3</b><span data-i18n="inARow">in a row</span><em id="stk-m">x2</em></div>
+
+    <!-- Round controls: pause and sound in one glass dock (fullscreen lives in the pause menu) -->
+    <div id="dock" hidden>
+      <button id="pause-btn" class="dock-btn primary" type="button" data-i18n-label="pause">
+        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="3.6" height="14" rx="1.2" /><rect x="13.9" y="5" width="3.6" height="14" rx="1.2" /></svg>
+      </button>
+      <i class="dock-sep"></i>
+      <button id="mute" class="dock-btn snd" type="button" data-i18n-label="toggleSound" aria-pressed="false">
+        <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" /><path d="M15.5 8.5a5 5 0 0 1 0 7" /><path d="M18.5 5.5a9 9 0 0 1 0 13" /></svg>
+        <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" /><path d="m17 9 5 6" /><path d="m22 9-5 6" /></svg>
+      </button>
+    </div>
+
+    <!-- Title -->
+    <div id="menu" class="overlay">
+      <div class="menu-top">
+        <button class="rank-chip" id="rank-chip" type="button" data-action="open-rank"></button>
+        <div class="menu-top-r">
+          <div class="coins-pill inline"><i class="coin"></i><b class="coins-val">0</b></div>
+          <button class="icon-btn gear fs-toggle" type="button" id="fs-menu" data-i18n-label="fullscreen" hidden><svg class="enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5" /><path d="M20 9V4h-5" /><path d="M4 15v5h5" /><path d="M20 15v5h-5" /></svg><svg class="exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4" /><path d="M15 4v5h5" /><path d="M9 20v-5H4" /><path d="M15 20v-5h5" /></svg></button>
+          <button class="icon-btn gear" type="button" data-action="open-settings" data-i18n-label="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" /></svg></button>
+        </div>
+      </div>
+      <!-- Painted arena: spotlights and crowd rows in CSS, so the 3D court can rest while the menu is up -->
+      <div class="menu-bg" aria-hidden="true"><i class="spot s1"></i><i class="spot s2"></i><i class="spot s3"></i><i class="spot s4"></i><i class="crowd"></i><i class="floor"></i><i class="fb b1"></i><i class="fb b2"></i></div>
+      <div class="hero">
+        <i class="hero-ball" aria-hidden="true"></i>
+        <h1 class="title"><span class="t1" data-i18n="title1">Buzzer</span><span class="t2" data-i18n="title2">Beater</span></h1>
+        <div class="kicker title-kicker" data-i18n="kicker">Arcade hoops</div>
+      </div>
+      <div class="modes" id="modes" role="radiogroup"></div>
+      <p class="mode-desc" id="mode-desc"></p>
+      <div class="menu-label" id="boosters-label" data-i18n="boostersHint">Boosters · tap to use next round</div>
+      <div class="boosters" id="boosters"></div>
+      <button class="btn play-btn" type="button" data-action="start">
+        <span class="play-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5Z" fill="currentColor" /></svg></span>
+        <span class="play-text"><span data-i18n="start">Play</span><small id="play-sub"></small></span>
+      </button>
+      <div id="career-slot"></div>
+      <div class="live-row">
+        <button class="live-card season" type="button" data-action="open-season" id="season-card"></button>
+        <button class="live-card league" type="button" data-action="open-league" id="league-card"></button>
+      </div>
+      <div class="menu-row menu-nav">
+        <button class="nav-btn" type="button" data-action="open-locker"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3 4 6l2 3.5 2-1V21h8V8.5l2 1L20 6l-4-3a4 4 0 0 1-8 0Z" /></svg><span data-i18n="locker">Locker</span></button>
+        <button class="nav-btn" type="button" data-action="open-challenges"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="1" fill="currentColor" /></svg><span data-i18n="challenges">Challenges</span><i class="dot" id="ch-dot" hidden></i></button>
+      </div>
+      <p class="menu-foot" id="menu-foot"></p>
+    </div>
+
+    <!-- Results -->
+    <div id="over" class="overlay results" hidden>
+      <!-- Score and stats stay on screen; only the rewards/XP section scrolls when it is long -->
+      <div class="res-head">
+        <div class="kicker title-kicker" data-i18n="finalBuzzer">Final buzzer</div>
+        <div class="res-score"><div class="final" id="final">0</div><div class="badge" id="newbest" data-i18n="newBest" hidden>New best</div></div>
+        <div class="stats">
+          <div class="stat"><b id="s-fg">0/0</b><span class="lbl" data-i18n="makes">Makes</span></div>
+          <div class="stat"><b id="s-streak">0</b><span class="lbl" data-i18n="bestStreak">Best streak</span></div>
+          <div class="stat"><b id="s-best">0</b><span class="lbl" data-i18n="record">Record</span></div>
+        </div>
+        <div class="earned">
+          <span class="lbl" data-i18n="coinsEarned">Coins earned</span>
+          <b><i class="coin"></i>+<span id="earned">0</span></b>
+          <button class="btn ad-btn small" type="button" data-action="double" id="double-btn"><i class="ad-tag" data-i18n="adBadge">AD</i><span data-i18n="doubleCoins">Double coins</span></button>
+        </div>
+      </div>
+      <div class="res-body">
+        <ul class="rewards" id="rewards"></ul>
+        <div id="xp-slot"></div>
+      </div>
+      <div class="actions res-actions">
+        <button class="btn ad-btn" type="button" data-action="continue" id="continue-btn"><i class="ad-tag" data-i18n="adBadge">AD</i><span id="continue-lbl" data-i18n="continueAd">+10s Continue</span></button>
+        <button class="btn play-btn" type="button" data-action="again" id="again">
+          <span class="play-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5Z" fill="currentColor" /></svg></span>
+          <span class="play-text"><span data-i18n="again">Run it back</span></span>
+        </button>
+        <div class="menu-row">
+          <button class="nav-btn" type="button" data-action="menu"><span data-i18n="menu">Menu</span></button>
+          <button class="nav-btn" type="button" data-action="share" id="share" hidden><span data-i18n="share">Share</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pause -->
+    <div id="pause" class="overlay" hidden>
+      <div class="card pause-card">
+        <div class="pause-badge"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="3.6" height="14" rx="1.2" /><rect x="13.9" y="5" width="3.6" height="14" rx="1.2" /></svg></div>
+        <div class="h1 small" data-i18n="paused">Time out</div>
+        <p class="tip" id="pause-tip"></p>
+        <button class="btn play-btn" id="resume" type="button" data-action="resume">
+          <span class="play-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5Z" fill="currentColor" /></svg></span>
+          <span class="play-text"><span data-i18n="resume">Resume</span></span>
+        </button>
+        <div class="pause-toggles">
+          <button class="toggle-tile snd" type="button" id="p-mute" aria-pressed="false"><svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" /><path d="M15.5 8.5a5 5 0 0 1 0 7" /><path d="M18.5 5.5a9 9 0 0 1 0 13" /></svg><svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" /><path d="m17 9 5 6" /><path d="m22 9-5 6" /></svg><span data-i18n="sound">Sound</span></button>
+          <button class="toggle-tile fs-toggle" type="button" id="fs-btn" hidden><svg class="enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5" /><path d="M20 9V4h-5" /><path d="M4 15v5h5" /><path d="M20 15v5h-5" /></svg><svg class="exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4" /><path d="M15 4v5h5" /><path d="M9 20v-5H4" /><path d="M15 20v-5h5" /></svg><span data-i18n="fullscreenShort">Fullscreen</span></button>
+          <button class="toggle-tile" type="button" data-action="open-settings-pause"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2" /><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" /></svg><span data-i18n="settings">Settings</span></button>
+        </div>
+        <button class="link-btn" type="button" data-action="quit" data-i18n="quit">Main menu</button>
+      </div>
+    </div>
+
+    <!-- Locker -->
+    <div id="locker" class="overlay panel" hidden>
+      <header>
+        <h2 data-i18n="locker">Locker</h2>
+        <div class="coins-pill inline"><i class="coin"></i><b class="coins-val">0</b></div>
+        <button class="icon-btn close" type="button" data-action="close" data-i18n-label="close">✕</button>
+      </header>
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" data-action="tab" data-kind="ball" data-i18n="tab_ball">Balls</button>
+        <button type="button" role="tab" data-action="tab" data-kind="trail" data-i18n="tab_trail">Trails</button>
+        <button type="button" role="tab" data-action="tab" data-kind="court" data-i18n="tab_court">Courts</button>
+      </div>
+      <button class="btn ad-btn small free-coins" type="button" data-action="free-coins" id="free-coins" hidden></button>
+      <div class="grid" id="locker-grid"></div>
+    </div>
+
+    <!-- Challenges -->
+    <div id="challenges" class="overlay panel" hidden>
+      <header>
+        <h2 data-i18n="challenges">Challenges</h2>
+        <div class="coins-pill inline"><i class="coin"></i><b class="coins-val">0</b></div>
+        <button class="icon-btn close" type="button" data-action="close" data-i18n-label="close">✕</button>
+      </header>
+      <div class="scroll">
+        <h3 data-i18n="daily">Daily challenges</h3>
+        <p class="sub" data-i18n="dailyResets">New challenges every day</p>
+        <ul class="tasks" id="daily-list"></ul>
+        <h3 data-i18n="achievementsTitle">Achievements</h3>
+        <ul class="tasks" id="ach-list"></ul>
+      </div>
+    </div>
+
+    <!-- Rank ladder -->
+    <div id="rank" class="overlay panel" hidden>
+      <header>
+        <h2 data-i18n="rank">Rank</h2>
+        <button class="icon-btn close" type="button" data-action="close" data-i18n-label="close">✕</button>
+      </header>
+      <div class="scroll rank-scroll">
+        <div class="rank-current" id="rank-current"></div>
+        <ul class="rank-ladder" id="rank-ladder"></ul>
+        <h3 data-i18n="rankHow">How to earn XP</h3>
+        <p class="sub" data-i18n="rankHowText">Every round earns XP: points, swishes, perfect releases, bank shots, Fever, Money Balls, career stars and challenges. Your first round each day earns double.</p>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div id="settings" class="overlay panel" hidden>
+      <header>
+        <h2 data-i18n="settings">Settings</h2>
+        <button class="icon-btn close" type="button" data-action="close" data-i18n-label="close">✕</button>
+      </header>
+      <div class="scroll settings-list">
+        <label class="set-row"><span data-i18n="setMusic">Music</span><input type="range" min="0" max="100" step="5" id="set-music" /></label>
+        <label class="set-row"><span data-i18n="setSfx">Sound effects</span><input type="range" min="0" max="100" step="5" id="set-sfx" /></label>
+        <div class="set-row"><span data-i18n="setHaptics">Vibration</span><button class="switch" type="button" role="switch" id="set-haptics" data-i18n-label="setHaptics"></button></div>
+        <div class="set-row">
+          <span data-i18n="setQuality">Graphics</span>
+          <div class="seg" id="set-quality"><button type="button" data-q="auto" data-i18n="qAuto">Auto</button><button type="button" data-q="high" data-i18n="qHigh">High</button><button type="button" data-q="low" data-i18n="qLow">Low</button></div>
+        </div>
+        <div class="set-row"><span data-i18n="setLefty">Left-handed</span><button class="switch" type="button" role="switch" id="set-lefty" data-i18n-label="setLefty"></button></div>
+        <div class="set-row"><span data-i18n="setReplays">Instant replays</span><button class="switch" type="button" role="switch" id="set-replays" data-i18n-label="setReplays"></button></div>
+        <div class="set-row"><span data-i18n="setProfile">Player name</span><button class="pf-row" type="button" data-action="open-profile" id="set-profile"></button></div>
+        <button class="btn ghost" type="button" data-action="tutorial" data-i18n="howToPlay">How to play</button>
+        <button class="danger-link" type="button" id="delete-data" data-i18n="deleteData">Delete my progress</button>
+        <p class="sub version" id="version"></p>
+      </div>
+    </div>
+
+    <!-- Season Pass -->
+    <div id="season" class="overlay panel" hidden>
+      <header>
+        <h2 data-i18n="season">Season Pass</h2>
+        <button class="icon-btn close" type="button" data-action="close" data-i18n-label="close">✕</button>
+      </header>
+      <div class="scroll" id="season-body"></div>
+    </div>
+
+    <!-- Weekly League -->
+    <div id="league" class="overlay panel" hidden>
+      <header>
+        <h2 data-i18n="league">League</h2>
+        <button class="icon-btn close" type="button" data-action="close" data-i18n-label="close">✕</button>
+      </header>
+      <div class="scroll" id="league-body"></div>
+    </div>
+
+    <!-- Player profile: nickname + avatar colour -->
+    <div id="profile" class="overlay modal" hidden>
+      <div class="card profile-card">
+        <div class="pf-avatar" id="pf-avatar">?</div>
+        <div class="h1 small" data-i18n="profile">Your player</div>
+        <p class="sub" data-i18n="profileSub">This name shows in the League and on challenges you send.</p>
+        <label class="pf-field">
+          <span data-i18n="nickname">Nickname</span>
+          <input id="pf-name" type="text" maxlength="14" autocomplete="nickname" spellcheck="false" enterkeyhint="done" />
+        </label>
+        <p class="pf-error" id="pf-error" role="alert"></p>
+        <button class="link-btn" type="button" data-pf="random">🎲 <span data-i18n="randomName">Surprise me</span></button>
+        <div class="pf-colors" id="pf-colors" role="radiogroup"></div>
+        <button class="btn play-btn" type="button" data-pf="save"><span class="play-text"><span data-i18n="save">Save</span></span></button>
+        <button class="link-btn" type="button" data-pf="close" data-i18n="close">Close</button>
+      </div>
+    </div>
+
+    <!-- Booster detail -->
+    <div id="booster-sheet" class="overlay modal" hidden>
+      <div class="card booster-card" id="booster-card"></div>
+    </div>
+
+    <!-- New item / mode showcase, league results -->
+    <div id="unlock" class="overlay modal" hidden></div>
+    <div id="league-result" class="overlay modal" hidden></div>
+
+    <!-- Rank promotion -->
+    <div id="promo" class="overlay modal" hidden></div>
+
+    <!-- Career: level map -->
+    <div id="career" class="overlay panel" hidden>
+      <header>
+        <h2 data-i18n="career">Career</h2>
+        <div class="coins-pill inline"><span class="star">★</span><b id="career-stars">0</b></div>
+        <button class="icon-btn close" type="button" data-action="close" data-i18n-label="close">✕</button>
+      </header>
+      <div class="tabs" id="chapter-tabs" role="tablist"></div>
+      <div class="level-grid" id="level-grid"></div>
+    </div>
+
+    <!-- Career: level intro -->
+    <div id="level-intro" class="overlay modal" hidden>
+      <div class="card level-card" id="level-intro-card"></div>
+    </div>
+
+    <!-- Career: level result -->
+    <div id="level-result" class="overlay" hidden></div>
+
+    <!-- Daily login reward -->
+    <div id="daily" class="overlay modal" hidden>
+      <div class="card">
+        <div class="kicker" id="daily-day">Day 1 reward</div>
+        <div class="big-coins"><i class="coin"></i>+<span id="daily-coins">20</span></div>
+        <p class="sub" data-i18n="dayRewardSub">Come back tomorrow for a bigger reward.</p>
+        <div class="actions">
+          <button class="btn ad-btn" type="button" data-action="claim-double" id="claim-double"><i class="ad-tag" data-i18n="adBadge">AD</i><span data-i18n="claimDouble">Claim ×2</span></button>
+          <button class="btn ghost" type="button" data-action="claim" data-i18n="claim">Claim</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toasts" aria-live="polite"></div>
+  </div>
+</div>
+
+  </body>
+</html>
